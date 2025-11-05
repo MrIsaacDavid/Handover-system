@@ -1,0 +1,40 @@
+services:
+  backend:
+    build: .
+    image: backend:1.0.0
+    ports:
+      - "5050:5000"
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=secret
+      - MYSQL_DB=handovers
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306" 
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: handovers
+    volumes:
+      - handover-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+volumes:
+  handover-mysql-data:
+
+networks:
+  app-network:
+    external: true
